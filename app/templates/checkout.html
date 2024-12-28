@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - E-Shop{% endblock %}
+
+{% block content %}
+<h2>Checkout</h2>
+<form method="post" action="/checkout/submit">
+    <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" id="name" name="name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label for="address" class="form-label">Address</label>
+        <textarea id="address" name="address" class="form-control" rows="3" required></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" id="email" name="email" class="form-control" required>
+    </div>
+    <h3>Order Summary</h3>
+    <ul class="list-group mb-3">
+        {% for item in cart_items %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ item.name }} (x{{ item.quantity }})
+            <span>${{ item.quantity * item.price }}</span>
+        </li>
+        {% endfor %}
+        <li class="list-group-item d-flex justify-content-between">
+            <strong>Total</strong>
+            <strong>${{ cart_total }}</strong>
+        </li>
+    </ul>
+    <button type="submit" class="btn btn-success">Confirm Order</button>
+</form>
+{% endblock %}

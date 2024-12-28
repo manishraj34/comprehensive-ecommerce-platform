@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Product Details - E-Shop{% endblock %}
+
+{% block content %}
+<div class="card">
+    <img src="{{ product.image }}" class="card-img-top" alt="{{ product.name }}">
+    <div class="card-body">
+        <h5 class="card-title">{{ product.name }}</h5>
+        <p class="card-text">{{ product.description }}</p>
+        <p class="card-text">Price: ${{ product.price }}</p>
+
+        <!-- Form for adding the product to the cart -->
+        <form method="POST" action="{{ url_for('main.add_to_cart', product_id=product.id) }}">
+            <input type="number" name="quantity" value="1" min="1" class="form-control mb-2" required>
+            <button type="submit" class="btn btn-success">Add to Cart</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart - E-Shop{% endblock %}
+
+{% block content %}
+<h2>Your Cart</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in cart_items %}
+        <tr>
+            {% if products[item.product_id] %}
+                <td>{{ products[item.product_id].name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ products[item.product_id].price }}</td>
+                <td>${{ item.quantity * products[item.product_id].price }}</td>
+            {% else %}
+                <td>Product Not Found</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+            {% endif %}
+            <td>
+                <a href="/cart/remove/{{ item.id }}" class="btn btn-danger btn-sm">Remove</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p class="text-end"><strong>Total: ${{ cart_total }}</strong></p>
+<a href="/checkout" class="btn btn-primary">Proceed to Checkout</a>
+{% endblock %}
