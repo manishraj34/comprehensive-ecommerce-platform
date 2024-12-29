@@ -21,7 +21,7 @@
                 <td>{{ products[item.product_id].name }}</td>
                 <td>{{ item.quantity }}</td>
                 <td>${{ products[item.product_id].price }}</td>
-                <td>${{ item.quantity * products[item.product_id].price }}</td>
+                <td>${{ "{:.2f}".format(item.quantity * products[item.product_id].price) }}</td>
             {% else %}
                 <td>Product Not Found</td>
                 <td>-</td>

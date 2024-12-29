@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Order History - E-Shop{% endblock %}
+
+{% block content %}
+<h2>Your Order History</h2>
+{% if orders %}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Status</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.status }}</td>
+            <td>
+                <a href="{{ url_for('main.order_details', order_id=order.id) }}" class="btn btn-info btn-sm">View Details</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>You have no past orders.</p>
+{% endif %}
+<a href="{{ url_for('main.home') }}" class="btn btn-primary">Return to Home</a>
+{% endblock %}

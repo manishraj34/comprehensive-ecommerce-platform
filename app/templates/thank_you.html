@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Thank You - E-Shop{% endblock %}
+{% block title %}Order Confirmation - E-Shop{% endblock %}
 
 {% block content %}
-<div class="text-center mt-5">
-    <h1>Thank You for Shopping!</h1>
-    <p>Your order has been successfully placed.</p>
-    <a href="/" class="btn btn-primary mt-3">Return to Home</a>
+<div class="alert alert-success mt-4" role="alert">
+    <h4 class="alert-heading">Thank you for your order!</h4>
+    <p>Your order ID is <strong>{{ order_id }}</strong>.</p>
+    <hr>
+    <a href="{{ url_for('main.order_history') }}" class="btn btn-primary">View Order History</a>
 </div>
 {% endblock %}

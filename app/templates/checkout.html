@@ -3,33 +3,48 @@
 {% block title %}Checkout - E-Shop{% endblock %}
 
 {% block content %}
-<h2>Checkout</h2>
-<form method="post" action="/checkout/submit">
-    <div class="mb-3">
-        <label for="name" class="form-label">Name</label>
-        <input type="text" id="name" name="name" class="form-control" required>
+<div class="container my-5">
+    <h2 class="text-center mb-4">Checkout</h2>
+    <div class="row">
+        <!-- Checkout Form -->
+        <div class="col-lg-7">
+            <form method="post" action="/checkout/submit" class="p-4 border rounded bg-light">
+                <h4 class="mb-3">Billing Information</h4>
+                <div class="mb-3">
+                    <label for="name" class="form-label">Full Name</label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="form-label">Shipping Address</label>
+                    <textarea id="address" name="address" class="form-control" rows="3" placeholder="Enter your address" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100 mt-3">Confirm Order</button>
+            </form>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-5">
+            <div class="p-4 border rounded bg-light">
+                <h4 class="mb-3">Order Summary</h4>
+                <ul class="list-group mb-3">
+                    {% for item in cart_items %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ products[item.product_id].name }} <small>(x{{ item.quantity }})</small></span>
+                        <strong>${{ "{:.2f}".format(item.quantity * products[item.product_id].price) }}</strong>
+                    </li>
+                    {% endfor %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Total</strong>
+                        <strong>${{ cart_total }}</strong>
+                    </li>
+                </ul>
+                <p class="text-center text-muted">Thank you for shopping with us!</p>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label for="address" class="form-label">Address</label>
-        <textarea id="address" name="address" class="form-control" rows="3" required></textarea>
-    </div>
-    <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input type="email" id="email" name="email" class="form-control" required>
-    </div>
-    <h3>Order Summary</h3>
-    <ul class="list-group mb-3">
-        {% for item in cart_items %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            {{ item.name }} (x{{ item.quantity }})
-            <span>${{ item.quantity * item.price }}</span>
-        </li>
-        {% endfor %}
-        <li class="list-group-item d-flex justify-content-between">
-            <strong>Total</strong>
-            <strong>${{ cart_total }}</strong>
-        </li>
-    </ul>
-    <button type="submit" class="btn btn-success">Confirm Order</button>
-</form>
+</div>
 {% endblock %}
