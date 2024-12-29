@@ -50,8 +50,8 @@ cart = []
 
 @main.route('/')
 def home():
-    """Route for the Home page."""
-    return render_template('home.html')
+    products = Product.query.all()  # Fetch all products from the database
+    return render_template('product_listing.html', products=products)
 
 
 @main.route('/products')
