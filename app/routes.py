@@ -1,17 +1,79 @@
-from flask import Blueprint,abort, render_template, request, redirect, url_for
-from .models import Product,ShoppingCart,User,Order,OrderItem
+from flask import Blueprint,abort, render_template, request, redirect, url_for,Flask,flash
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from .models import Product,ShoppingCart,User,Order,OrderItem,RegistrationForm,LoginForm
 from . import db
 
 main = Blueprint('main', __name__)
 
+# LOGIN REGISTER 
+# Register route
+@main.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            flash('Email already registered. Please log in.', 'danger')
+            return redirect(url_for('main.login'))
+
+        # Hash the password using pbkdf2:sha256 (default method)
+        hashed_password = generate_password_hash(form.password.data)
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash('Registration successful! Please log in.', 'success')
+        return redirect(url_for('main.login'))
+
+    return render_template('register.html', form=form)
+
+# Login route
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and check_password_hash(user.password, form.password.data):  # Validate hashed password
+            login_user(user)
+            flash('Login successful!', 'success')
+            return redirect(url_for('main.home'))
+        else:
+            flash('Invalid email or password.', 'danger')
+
+    return render_template('login.html', form=form)
+
+
+
+# Logout route
+@main.route('/logout')
+@login_required
+def logout():
+    logout_user()  # Log the user out
+    flash('You have been logged out.', 'info')  
+    return redirect(url_for('main.login')) 
+
+
+# Protect all routes except the public ones
+@main.before_request
+def before_request():
+    if request.endpoint not in ['main.home', 'main.login', 'main.register', 'main.logout']:
+        if not current_user.is_authenticated:
+            flash('You need to log in first!', 'warning')
+            return redirect(url_for('main.login'))  # Use 'main.login'
+
 # ADMIN ROUTE
+
 @main.route('/admin/products')
+@login_required
 def manage_products():
     """Route to display all products."""
     products = Product.query.all()
     return render_template('manage_products.html', products=products)
 
 @main.route('/admin/products/add', methods=['GET', 'POST'])
+@login_required
 def add_product():
     """Route to add a new product."""
     if request.method == 'POST':
@@ -29,6 +91,7 @@ def add_product():
     return render_template('add_product.html')
 
 @main.route('/admin/products/delete/<int:id>')
+@login_required
 def delete_product(id):
     """Route to delete a product."""
     product = Product.query.get(id)
@@ -38,15 +101,7 @@ def delete_product(id):
     return redirect(url_for('main.manage_products'))
 
 
-# Placeholder data for demonstration
-products = [
-    {'id': 1, 'name': 'Product 1', 'description': 'Description of Product 1', 'price': 100, 'image': 'https://via.placeholder.com/150'},
-    {'id': 2, 'name': 'Product 2', 'description': 'Description of Product 2', 'price': 200, 'image': 'https://via.placeholder.com/150'},
-    {'id': 3, 'name': 'Product 3', 'description': 'Description of Product 3', 'price': 300, 'image': 'https://via.placeholder.com/150'},
-]
-
-cart = []
-
+# MAIN ROUTES
 
 @main.route('/')
 def home():
@@ -54,7 +109,10 @@ def home():
     return render_template('product_listing.html', products=products)
 
 
+# PRODUCT ROUTES
+
 @main.route('/products')
+@login_required
 def product_listing():
     """Display all available products."""
     products = Product.query.all()  # Fetch all products from the database
@@ -62,6 +120,7 @@ def product_listing():
 
 
 @main.route('/product/<int:product_id>')
+@login_required
 def product_details(product_id):
     """Display details of a specific product."""
     product = Product.query.get(product_id)
@@ -70,8 +129,9 @@ def product_details(product_id):
 
     return render_template('product_details.html', product=product)
 
-    
+# CART ROUTES
 @main.route('/cart')
+@login_required
 def shopping_cart():
     """View items in the shopping cart."""
     user_id = 1  # Assume a logged-in user (mock for now)
@@ -94,6 +154,7 @@ def shopping_cart():
 
 
 @main.route('/cart/add/<int:product_id>', methods=['POST'])
+@login_required
 def add_to_cart(product_id):
     """Add a product to the shopping cart."""
     user_id = 1  # Assume a logged-in user (mock for now)
@@ -117,6 +178,7 @@ def add_to_cart(product_id):
 
 
 @main.route('/cart/update/<int:cart_id>', methods=['POST'])
+@login_required
 def update_cart(cart_id):
     """Update the quantity of a product in the cart."""
     cart_item = ShoppingCart.query.get(cart_id)
@@ -129,6 +191,7 @@ def update_cart(cart_id):
 
 
 @main.route('/cart/remove/<int:item_id>', methods=['GET'])
+@login_required
 def remove_from_cart(item_id):
     """Remove an item from the shopping cart."""
     cart_item = ShoppingCart.query.get(item_id)
@@ -139,8 +202,9 @@ def remove_from_cart(item_id):
     db.session.commit()
     return redirect(url_for('main.shopping_cart'))
 
-
+# CHECKOUT ROUTES
 @main.route('/checkout', methods=['GET', 'POST'])
+@login_required
 def checkout():
     """Handle the checkout process."""
     user_id = 1  # Mock user ID (replace with actual user authentication logic)
@@ -191,6 +255,7 @@ def checkout():
 
 
 @main.route('/checkout/submit', methods=['POST'])
+@login_required
 def checkout_submit():
     """Handle order submission."""
     user_id = 1  # Mock user ID, replace with actual logged-in user ID
@@ -231,9 +296,10 @@ def checkout_submit():
 
 
 
-
+# ORDER ROUTES
 
 @main.route('/orders')
+@login_required
 def order_history():
     """Display the user's order history."""
     user_id = 1  # Mock user ID
@@ -241,10 +307,13 @@ def order_history():
     return render_template('order_history.html', orders=orders)
 
 @main.route('/order/<int:order_id>', methods=['GET'])
+@login_required
 def order_details(order_id):
     order = Order.query.get(order_id)
     # If order is not found, handle the error
     if order is None:
         return abort(404)
     return render_template('order_details.html', order=order)
+
+
 
