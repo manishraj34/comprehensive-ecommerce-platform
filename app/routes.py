@@ -4,6 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import Product,ShoppingCart,User,Order,OrderItem,RegistrationForm,LoginForm
 from . import db
+import pandas as pd
 
 main = Blueprint('main', __name__)
 
@@ -51,7 +52,7 @@ def login():
 @login_required
 def logout():
     logout_user()  # Log the user out
-    flash('You have been logged out.', 'info')  
+    flash('You have been logged out.', 'info') 
     return redirect(url_for('main.login')) 
 
 
@@ -64,17 +65,25 @@ def before_request():
             return redirect(url_for('main.login'))  # Use 'main.login'
 
 # ADMIN ROUTE
+# Admin Analytics Dashboard
+ADMIN_EMAILS = ['admin@gmail.com']  # Add admin email(s) here
 
 @main.route('/admin/products')
 @login_required
 def manage_products():
+    if current_user.email not in ADMIN_EMAILS:
+        flash('Access denied: Admins only.', 'danger')
+        return redirect(url_for('main.home'))
     """Route to display all products."""
     products = Product.query.all()
-    return render_template('manage_products.html', products=products)
+    return render_template('admin/manage_products.html', products=products)
 
 @main.route('/admin/products/add', methods=['GET', 'POST'])
 @login_required
 def add_product():
+    if current_user.email not in ADMIN_EMAILS:
+        flash('Access denied: Admins only.', 'danger')
+        return redirect(url_for('main.home'))
     """Route to add a new product."""
     if request.method == 'POST':
         name = request.form['name']
@@ -88,17 +97,102 @@ def add_product():
 
         return redirect(url_for('main.manage_products'))
 
-    return render_template('add_product.html')
+    return render_template('admin/add_product.html')
+
+
+
+# Admin route to edit product
+@main.route('/admin/products/edit/<int:product_id>', methods=['GET', 'POST'])
+@login_required
+def edit_product(product_id):
+    # Ensure only admin can access this page
+    if current_user.email != 'admin@gmail.com':
+        flash('You do not have permission to edit this product.', 'danger')
+        return redirect(url_for('main.product', product_id=product_id))
+    """Route to edit an existing product."""
+    
+    # Get the product by ID
+    product = Product.query.get_or_404(product_id)
+    
+    if request.method == 'POST':
+        # Get the updated product details from the form
+        product.name = request.form['name']
+        product.description = request.form['description']
+        product.price = float(request.form['price'])
+        product.image = request.form['image']  # Optional, keep the current image if not updated
+        
+        # Commit the changes to the database
+        db.session.commit()
+        
+        flash('Product updated successfully!', 'success')
+        return redirect(url_for('main.manage_products'))  # Redirect to the product management page
+
+    return render_template('admin/edit_product.html', product=product)
 
 @main.route('/admin/products/delete/<int:id>')
 @login_required
 def delete_product(id):
+    if current_user.email not in ADMIN_EMAILS:
+        flash('Access denied: Admins only.', 'danger')
+        return redirect(url_for('main.home'))
     """Route to delete a product."""
     product = Product.query.get(id)
     if product:
         db.session.delete(product)
         db.session.commit()
+        remaining_products = Product.query.filter(Product.id > id).all()
+
+        for product in remaining_products:
+            product.id -= 1  # Decrement the ID by 1
+            db.session.commit()
     return redirect(url_for('main.manage_products'))
+
+
+
+@main.route('/analytics')
+@login_required
+def analytics():
+    if current_user.email not in ADMIN_EMAILS:  # Check admin privilege
+        flash('Access denied: Admins only.', 'danger')
+        return redirect(url_for('main.home'))
+
+    # Fetch product data for analytics
+    products = Product.query.all()
+    product_data = [
+        {
+            'name': product.name,
+            'description': product.description,
+            'price': product.price,
+            'image': product.image
+        }
+        for product in products
+    ]
+    return render_template('admin/analytics.html', products=product_data)
+
+
+
+@main.route('/sales')
+@login_required
+def sales():
+    if current_user.email not in ADMIN_EMAILS:  # Check admin privilege
+        flash('Access denied: Admins only.', 'danger')
+        return redirect(url_for('main.home'))
+
+    # Fetch all products and serialize them
+    products = Product.query.all()
+    serialized_products = [
+        {
+            "id": product.id,
+            "name": product.name,
+            "description": product.description,
+            "price": product.price,
+            "image": product.image
+        }
+        for product in products
+    ]
+
+    return render_template('admin/sales.html', products=serialized_products)
+
 
 
 # MAIN ROUTES
@@ -314,6 +408,5 @@ def order_details(order_id):
     if order is None:
         return abort(404)
     return render_template('order_details.html', order=order)
-
 
 

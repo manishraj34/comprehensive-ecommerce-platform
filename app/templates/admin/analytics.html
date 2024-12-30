@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Sales Analytics{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Admin Analytics Section -->
+            <div class="col-lg-6">
+                <h1 class="text-center">Admin Analytics</h1>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="mt-3">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Product Table -->
+                <div class="table-responsive mt-4">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Price</th>
+                                <th>Image</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+                                    <td>{{ product.description }}</td>
+                                    <td>${{ product.price }}</td>
+                                    <td>
+                                        {% if product.image %}
+                                            <img src="{{ product.image }}" alt="{{ product.name }}" class="img-thumbnail" style="max-width: 100px;">
+                                        {% else %}
+                                            <span>No Image</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Button to Manage Products -->
+            <div class="mt-4">
+                
+                <a href="{{ url_for('main.manage_products') }}" class="btn btn-primary">Go to Manage Products</a>
+            </div>
+            </div>
+
+            <!-- Price Distribution Section -->
+            <div class="col-lg-6">
+                <h2 class="text-center">Price Distribution</h2>
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Pass product data to JavaScript
+        const productData = {{ products|tojson }};
+
+        // Extract data for the chart
+        const productNames = productData.map(p => p.name);
+        const productPrices = productData.map(p => p.price);
+
+        // Render the chart
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: productNames,
+                datasets: [{
+                    label: 'Price ($)',
+                    data: productPrices,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+    {% endblock %}
+
