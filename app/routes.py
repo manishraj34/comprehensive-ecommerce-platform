@@ -16,8 +16,8 @@ def register():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user:
-            flash('Email already registered. Please log in.', 'danger')
-            return redirect(url_for('main.login'))
+            flash('Email already registered. Please try with different mail id.', 'danger')
+            return redirect(url_for('main.register'))
 
         # Hash the password using pbkdf2:sha256 (default method)
         hashed_password = generate_password_hash(form.password.data)

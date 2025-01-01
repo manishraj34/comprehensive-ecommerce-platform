@@ -76,9 +76,24 @@
     </style>
 </head>
 <body>
-    
     <div class="container">
         <h1 class="animate__animated animate__fadeIn">Register</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="flash-messages" class="mb-4">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Registration Form -->
         <form method="POST" action="{{ url_for('main.register') }}">
             {{ form.hidden_tag() }}
             <div class="form-group">
@@ -106,5 +121,16 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Automatically remove flash messages after 30 seconds
+        setTimeout(() => {
+            const flashMessages = document.getElementById('flash-messages');
+            if (flashMessages) {
+                flashMessages.style.transition = 'opacity 0.5s ease';
+                flashMessages.style.opacity = '0';
+                setTimeout(() => flashMessages.remove(), 500); // Remove element after fade-out
+            }
+        }, 3000);
+    </script>
 </body>
 </html>

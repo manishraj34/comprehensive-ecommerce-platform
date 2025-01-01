@@ -3,30 +3,43 @@
 {% block title %}Order History - E-Shop{% endblock %}
 
 {% block content %}
-<h2>Your Order History</h2>
-{% if orders %}
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Order ID</th>
-            <th>Status</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for order in orders %}
-        <tr>
-            <td>{{ order.id }}</td>
-            <td>{{ order.status }}</td>
-            <td>
-                <a href="{{ url_for('main.order_details', order_id=order.id) }}" class="btn btn-info btn-sm">View Details</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>You have no past orders.</p>
-{% endif %}
-<a href="{{ url_for('main.home') }}" class="btn btn-primary">Return to Home</a>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Your Order History</h2>
+
+    {% if orders %}
+    <table class="table table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>Order ID</th>
+                <th>Status</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>
+                    <span class="badge {% if order.status == 'Completed' %}bg-success{% elif order.status == 'Pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                        {{ order.status }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('main.order_details', order_id=order.id) }}" class="btn btn-info btn-sm">
+                        <i class="fas fa-info-circle"></i> View Details
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info text-center">
+        You have no past orders.
+    </div>
+    {% endif %}
+    <div class="d-flex justify-content-center mt-4">
+        <a href="{{ url_for('main.home') }}" class="btn btn-primary btn-lg">Return to Home</a>
+    </div>
+</div>
 {% endblock %}
