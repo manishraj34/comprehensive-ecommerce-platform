@@ -71,6 +71,25 @@ The Comprehensive E-commerce Platform is a robust web application designed to pr
 3. **View Analytics**: Analyze sales data using visualized dashboards.
 4. **View Sales**: Check the sales history for all transactions.
 
+## Routes and Their Uses
+### Public Routes
+1. `/` - Home page displaying product listings.
+2. `/login` - User login page.
+3. `/register` - User registration page.
+
+### User-Specific Routes
+1. `/cart` - Displays the shopping cart with options to manage items.
+2. `/cart/add/<product_id>` - Adds a product to the user's cart.
+3. `/cart/remove/<item_id>` - Removes an item from the cart.
+4. `/orders` - Displays the order history for the logged-in user.
+5. `/checkout` - Initiates the checkout process for the user's cart.
+6. `/logout` - Logs the user out of the platform.
+
+### Admin-Specific Routes
+1. `/admin/add_product` - Page for adding new products.
+2. `/admin/manage_products` - Page to view, edit, or delete products.
+3. `/admin/analytics` - Displays sales analytics and performance metrics.
+4. `/admin/sales` - View detailed sales data.
 ---
 
 ## 5. Known Issues
