@@ -80,4 +80,4 @@ The Comprehensive E-commerce Platform is a robust web application designed to pr
 
 ---
 
-Feel free to contribute or report issues on the [GitHub repository]().
+Feel free to contribute or report issues on the [GitHub repository](https://github.com/manishraj34/comprehensive-ecommerce-platform/tree/main).
